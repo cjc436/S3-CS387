@@ -139,20 +139,40 @@ public class Main {
         } // for
         
         // default players: AI vs human
+//        if (players.size()!=2) {
+//            {
+//                PlayerInput pi = new PlayerInput();
+//                pi.m_inputType = PlayerInput.INPUT_MOUSE;
+//                pi.m_playerID = "player1";
+//                pi.m_playerName = "Human";
+//                players.add(pi);
+//            }
+//            {
+//                PlayerInput pi = new PlayerInput();
+//                pi.m_inputType = PlayerInput.INPUT_AI;
+//                pi.m_playerID = "player2";
+//                pi.m_playerName = "FootmenRush";
+//                pi.AIType = "ai-footmen-rush";
+//                players.add(pi);
+//            }
+//        }
+
+        // AI vs AI
         if (players.size()!=2) {
             {
                 PlayerInput pi = new PlayerInput();
-                pi.m_inputType = PlayerInput.INPUT_MOUSE;
+                pi.m_inputType = PlayerInput.INPUT_AI;
                 pi.m_playerID = "player1";
-                pi.m_playerName = "Human";
+                pi.m_playerName = "FootmenRush";
+                pi.AIType = "ai-footmen-rush";
                 players.add(pi);
             }
             {
                 PlayerInput pi = new PlayerInput();
                 pi.m_inputType = PlayerInput.INPUT_AI;
                 pi.m_playerID = "player2";
-                pi.m_playerName = "FootmenRush";
-                pi.AIType = "ai-footmen-rush";
+                pi.m_playerName = "ArchersRush";
+                pi.AIType = "ai-archers-rush";
                 players.add(pi);
             }
         }

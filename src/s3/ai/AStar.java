@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import s3.base.S3;
+import s3.base.S3App;
 import s3.entities.S3PhysicalEntity;
 import s3.util.Pair;
 
@@ -57,10 +58,15 @@ public class AStar {
 				return path;
 			}
 
+			public boolean isOutsideOfGameBorders() {
+				if (this.pos.m_a < 0 || this.pos.m_b < 0 || this.pos.m_a > theGame.getMap().getWidth() || this.pos.m_b > theGame.getMap().getHeight())
+					return true;
+				return false;
+			}
+
 			public List<Position> getChildren() {
 				ArrayList<Position> children = new ArrayList<>();
 				Pair<Double, Double> currPos = this.pos;
-//				int entityWidth = entity.getWidth();
 				children.add(new Position(new Pair<>(currPos.m_a + 1, currPos.m_b)));
 				children.add(new Position(new Pair<>(currPos.m_a - 1, currPos.m_b)));
 				children.add(new Position(new Pair<>(currPos.m_a, currPos.m_b + 1)));
@@ -82,46 +88,37 @@ public class AStar {
 			}
 		}
 
-		System.out.println("path request: StartX=" + this.startX + ", StartY=" + this.startY + ", GoalX=" + this.goalX + ", GoalY=" + this.goalY);
+//		System.out.println("path request: StartX=" + this.startX + ", StartY=" + this.startY + ", GoalX=" + this.goalX + ", GoalY=" + this.goalY);
 
 		ArrayList<Position> OpenArray = new ArrayList<>();
-		//HashSet<Position> OpenSet = new HashSet<>();
 		HashSet<Position> ClosedSet = new HashSet<>();
 		Position start = new Position(new Pair(startX, startY));
 		Position goal = new Position(new Pair(goalX, goalY));
-		//OpenSet.add(start);
 		OpenArray.add(start);
 
 		while (!OpenArray.isEmpty()) {
 			Position temp = OpenArray.remove(0);
 			if (temp.equals(goal)) {
-				System.out.println("Goal Found!");
+//				System.out.println("Goal Found!");
 				return temp.getPath();
 			}
 			ClosedSet.add(temp);
 			for (Position child : temp.getChildren()) {
 				if (!(ClosedSet.contains(child) || OpenArray.contains(child))) {
-//					Pair<Double, Double> p = child.pos;
 					this.entity.setX(child.pos.m_a.intValue());
 					this.entity.setY(child.pos.m_b.intValue());
 
-					if (this.theGame.anyLevelCollision(this.entity) == null) {
-//					if (this.theGame.isSpaceFree(p.m_a.intValue(), p.m_b.intValue(), this.entity.getWidth())) {
+					if (!child.isOutsideOfGameBorders() && this.theGame.anyLevelCollision(this.entity) == null) {
 						child.parent = temp;
 						OpenArray.add(child);
-						this.entity.setX((int) startX);
-						this.entity.setY((int) startY);
-						//OpenSet.add(child);
 					}
+					this.entity.setX((int) startX);
+					this.entity.setY((int) startY);
 				}
 			}
 		}
-		System.out.println("Not Found!");
+//		System.out.println("Not Found!");
 		return null;
 	}
-
-//	public static void main(String[] args) {
-//
-//	}
 
 }
