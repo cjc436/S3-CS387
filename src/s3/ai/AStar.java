@@ -1,6 +1,7 @@
 package s3.ai;
 
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,67 +40,17 @@ public class AStar {
 	}
 
 	public List<Pair<Double, Double>> computePath() {
-		class Position {
-			public Pair<Double, Double> pos;
-			public Position parent;
-			//public Double heuristic;
-
-			public Position(Pair<Double, Double> pos) {
-				this.pos = pos;
-				this.parent = null;
-				//this.heuristic = 0.0;
-			}
-
-			public ArrayList<Pair<Double, Double>> getPath() {
-				if (this.parent == null)
-					return new ArrayList<>();
-				ArrayList<Pair<Double, Double>> path = this.parent.getPath();
-				path.add(this.pos);
-				return path;
-			}
-
-			public boolean isOutsideOfGameBorders() {
-				if (this.pos.m_a < 0 || this.pos.m_b < 0 || this.pos.m_a > theGame.getMap().getWidth() || this.pos.m_b > theGame.getMap().getHeight())
-					return true;
-				return false;
-			}
-
-			public List<Position> getChildren() {
-				ArrayList<Position> children = new ArrayList<>();
-				Pair<Double, Double> currPos = this.pos;
-				children.add(new Position(new Pair<>(currPos.m_a + 1, currPos.m_b)));
-				children.add(new Position(new Pair<>(currPos.m_a - 1, currPos.m_b)));
-				children.add(new Position(new Pair<>(currPos.m_a, currPos.m_b + 1)));
-				children.add(new Position(new Pair<>(currPos.m_a, currPos.m_b - 1)));
-				return children;
-			}
-
-			@Override
-			public boolean equals(Object o) {
-				if (this == o) return true;
-				if (o == null || getClass() != o.getClass()) return false;
-				Position position = (Position) o;
-				return Objects.equals(pos, position.pos);
-			}
-
-			@Override
-			public int hashCode() {
-				return Objects.hash(pos);
-			}
-		}
-
-//		System.out.println("path request: StartX=" + this.startX + ", StartY=" + this.startY + ", GoalX=" + this.goalX + ", GoalY=" + this.goalY);
-
+		// A* with Heuristic Version
 		ArrayList<Position> OpenArray = new ArrayList<>();
 		HashSet<Position> ClosedSet = new HashSet<>();
 		Position start = new Position(new Pair(startX, startY));
 		Position goal = new Position(new Pair(goalX, goalY));
+		start.heuristic = this.getHeuristic(start);
 		OpenArray.add(start);
 
 		while (!OpenArray.isEmpty()) {
 			Position temp = OpenArray.remove(0);
 			if (temp.equals(goal)) {
-//				System.out.println("Goal Found!");
 				return temp.getPath();
 			}
 			ClosedSet.add(temp);
@@ -108,17 +59,67 @@ public class AStar {
 					this.entity.setX(child.pos.m_a.intValue());
 					this.entity.setY(child.pos.m_b.intValue());
 
-					if (!child.isOutsideOfGameBorders() && this.theGame.anyLevelCollision(this.entity) == null) {
+					if (!child.isOutsideOfGameBorders(this.theGame) && this.theGame.anyLevelCollision(this.entity) == null) {
 						child.parent = temp;
-						OpenArray.add(child);
+						child.heuristic = this.getHeuristic(child);
+						child.depth = temp.depth + 1;
+						OpenArray = insertByHeuristic(OpenArray,child);
 					}
 					this.entity.setX((int) startX);
 					this.entity.setY((int) startY);
 				}
 			}
 		}
-//		System.out.println("Not Found!");
 		return null;
+
+		// Breadth First Search Version
+//		ArrayList<Position> OpenArray = new ArrayList<>();
+//		HashSet<Position> ClosedSet = new HashSet<>();
+//		Position start = new Position(new Pair(startX, startY));
+//		Position goal = new Position(new Pair(goalX, goalY));
+//		OpenArray.add(start);
+//
+//		while (!OpenArray.isEmpty()) {
+//			Position temp = OpenArray.remove(0);
+//			if (temp.equals(goal)) {
+//				return temp.getPath();
+//			}
+//			ClosedSet.add(temp);
+//			for (Position child : temp.getChildren()) {
+//				if (!(ClosedSet.contains(child) || OpenArray.contains(child))) {
+//					this.entity.setX(child.pos.m_a.intValue());
+//					this.entity.setY(child.pos.m_b.intValue());
+//
+//					if (!child.isOutsideOfGameBorders(this.theGame) && this.theGame.anyLevelCollision(this.entity) == null) {
+//						child.parent = temp;
+//						OpenArray.add(child);
+//					}
+//					this.entity.setX((int) startX);
+//					this.entity.setY((int) startY);
+//				}
+//			}
+//		}
+//		return null;
+	}
+
+	private Double getHeuristic(Position position) {
+		return Math.abs(position.pos.m_a - this.goalX) + Math.abs(position.pos.m_b - this.goalY);
+	}
+
+	private ArrayList<Position> insertByHeuristic(ArrayList<Position> positions, Position position) {
+		int i = positions.size() - 1;
+		if (i == -1) {
+			positions.add(position);
+			return positions;
+		}
+		Position currentP = positions.get(i);
+		while (i > -1 && currentP.heuristic + currentP.depth > position.heuristic + position.depth) {
+			i -= 1;
+			if (i > -1)
+				currentP = positions.get(i);
+		}
+		positions.add(i+1,position);
+		return positions;
 	}
 
 }
